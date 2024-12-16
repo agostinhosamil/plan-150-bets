@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind utilities;
+@tailwind components;
+
+@layer base {
+  * {
+    @apply box-border
+  }
+
+  button, input[type=button] {
+    @apply outline-none
+  }
+}
