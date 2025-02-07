@@ -1,4 +1,4 @@
-import { colors, verdant } from "@verdantkit/tailwind-plugin";
+import { colors } from "@verdantkit/tailwind-plugin";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -10,5 +10,5 @@ export default {
       },
     },
   },
-  plugins: [verdant()],
+  plugins: [require("@verdantkit/tailwind-plugin").verdant()],
 };
