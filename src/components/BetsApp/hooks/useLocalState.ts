@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
+import { localStateKey } from "../utils/localStateKey";
 
 type LocalState<StateDataType = unknown> = [
   StateDataType,
   React.Dispatch<React.SetStateAction<StateDataType>>
 ];
-
-const key = (key: string) => `__DATA_APP_STATE-${key}-config`;
 
 export const useLocalState = <StateDataType = unknown>(
   stateKey: string,
@@ -13,7 +12,7 @@ export const useLocalState = <StateDataType = unknown>(
 ): LocalState<StateDataType> => {
   const [state, setState] = useState<StateDataType>(() => {
     // ;
-    const stateFromLocalStorage = localStorage.getItem(key(stateKey));
+    const stateFromLocalStorage = localStorage.getItem(localStateKey(stateKey));
 
     if (stateFromLocalStorage) {
       const stateDataFromLocalStorage = JSON.parse(
@@ -23,14 +22,19 @@ export const useLocalState = <StateDataType = unknown>(
     }
 
     if (defaultValue) {
-      localStorage.setItem(key(stateKey), JSON.stringify(defaultValue));
+      localStorage.setItem(
+        localStateKey(stateKey),
+        JSON.stringify(defaultValue)
+      );
     }
 
     return defaultValue as StateDataType;
   });
 
   useEffect(() => {
-    localStorage.setItem(key(stateKey), JSON.stringify(state));
+    if (state) {
+      localStorage.setItem(localStateKey(stateKey), JSON.stringify(state));
+    }
   }, [state, stateKey]);
 
   // useEffect(() => {

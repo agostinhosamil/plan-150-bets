@@ -6,4 +6,8 @@ export default defineConfig({
   plugins: [react()],
 
   base: "/plan-150-bets/",
+
+  define: {
+    "process.env": {},
+  },
 });
