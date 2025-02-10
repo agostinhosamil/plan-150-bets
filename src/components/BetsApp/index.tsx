@@ -13,9 +13,11 @@ import {
   useDialog,
 } from "@verdantkit/react";
 import { formatCurrency, noEmpty } from "@verdantkit/utils";
+import axios from "axios";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { FaCheck, FaInfo, FaPlus } from "react-icons/fa6";
 
+import { API_URL } from "./config";
 import { useLocalState } from "./hooks/useLocalState";
 import { Bet } from "./types";
 import { balanceToString } from "./utils";
@@ -219,7 +221,7 @@ export const BetsApp = () => {
     );
   };
 
-  const loginButtonClickHandler = (event: React.MouseEvent) => {
+  const loginButtonClickHandler = async (event: React.MouseEvent) => {
     event.preventDefault();
 
     const emailInputElement = emailInputRef.current;
@@ -228,7 +230,24 @@ export const BetsApp = () => {
       emailInputElement instanceof HTMLInputElement &&
       noEmpty(emailInputElement.value)
     ) {
-      setUsername(emailInputElement.value);
+      const username = emailInputElement.value;
+
+      try {
+        const response = await axios.post<Array<Bet>>(String(API_URL), {
+          username,
+        });
+
+        const bets = response.data;
+
+        if (bets instanceof Array && bets.length >= 1) {
+          // localStorage.setItem(localStateKey("bets"), JSON.stringify(bets));
+          setBets(bets);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+
+      setUsername(username);
     }
   };
 
@@ -613,7 +632,7 @@ export const BetsApp = () => {
           <h2 className="text-3xl font-black uppercase">Iniciar sessão</h2>
           <div className="w-full max-w-xl px-4 py-4 my-7 flex flex-col gap-4 bg-zinc-900 rounded-lg">
             <TextField label="Endereço de email" ref={emailInputRef} />
-            <TextField label="Palavra passe" />
+            {/* <TextField label="Palavra passe" /> */}
             <button
               type="submit"
               onClick={loginButtonClickHandler}
