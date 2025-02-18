@@ -13,16 +13,15 @@ import {
   useDialog,
 } from "@verdantkit/react";
 import { formatCurrency, noEmpty } from "@verdantkit/utils";
-import axios from "axios";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { FaCheck, FaInfo, FaPlus } from "react-icons/fa6";
 
-import { API_URL } from "./config";
 import { useLocalState } from "./hooks/useLocalState";
 import { Bet } from "./types";
 import { balanceToString } from "./utils";
 import { calcFutureDate } from "./utils/calcFutureDate";
 import { getBetCalendar } from "./utils/getBetCalendar";
+import { syncFromLocalStorage } from "./utils/syncFromLocalStorage";
 import { syncLocalStorage } from "./utils/syncLocalStorage";
 
 const INITIAL_BETS_CONFIG: Array<Bet> = [
@@ -62,11 +61,14 @@ const INITIAL_BETS_CONFIG: Array<Bet> = [
 
 // const MAX_BET_GAIN_AMOUNT: number = 50_000_000;
 
-export const BetsApp = () => {
-  const [bets, setBets] = useLocalState<Array<Bet>>(
-    "bets",
-    INITIAL_BETS_CONFIG
-  );
+type BetsAppProps = {
+  bets?: Array<Bet>;
+};
+
+export const BetsApp: React.FunctionComponent<BetsAppProps> = ({
+  bets: initialBetsConfig = INITIAL_BETS_CONFIG,
+}) => {
+  const [bets, setBets] = useLocalState<Array<Bet>>("bets", initialBetsConfig);
 
   const [screen, setScreen] = useLocalState("screen", 1);
   const [username, setUsername] = useLocalState<string>("username");
@@ -232,21 +234,9 @@ export const BetsApp = () => {
     ) {
       const username = emailInputElement.value;
 
-      try {
-        const response = await axios.post<Array<Bet>>(String(API_URL), {
-          username,
-        });
+      const bets = await syncFromLocalStorage(username);
 
-        const bets = response.data;
-
-        if (bets instanceof Array && bets.length >= 1) {
-          // localStorage.setItem(localStateKey("bets"), JSON.stringify(bets));
-          setBets(bets);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-
+      setBets(bets);
       setUsername(username);
     }
   };
@@ -640,6 +630,20 @@ export const BetsApp = () => {
             >
               Iniciar sessão
             </button>
+          </div>
+        </div>
+      )}
+      {bets.length < 1 && (
+        <div className="w-full flex flex-row items-center justify-center gap-5 fixed m-auto max-w-4xl rounded-md shadow-xl bg-zinc-800 select-none p-4 bottom-9">
+          <div className="inline-flex w-14 bg-red-500 relative">
+            <DialogButton
+              type="button"
+              role="button"
+              content={CreateBetDialog}
+              className="bg-purple-700 absolute top-0 left-0 -translate-y-1/2 scale-150 flex flex-row justify-center items-center text-xl hover:bg-purple-800 active:bg-purple-900 hover:scale-[1.6] active:scale-125 transition-all rounded-full size-14 outline-0 border-0"
+            >
+              <FaPlus />
+            </DialogButton>
           </div>
         </div>
       )}
